@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabaseClient.js'
 import Sidebar from './components/Sidebar.jsx'
 import Auth from './pages/Auth.jsx'
@@ -14,6 +14,8 @@ import Settings from './pages/Settings.jsx'
 export default function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+  const prevSession = useRef(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -27,6 +29,13 @@ export default function App() {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (session && !prevSession.current) {
+      navigate('/', { replace: true })
+    }
+    prevSession.current = !!session
+  }, [session, navigate])
 
   if (loading) return null
 
